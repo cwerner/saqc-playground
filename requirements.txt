@@ -1,0 +1,6 @@
+numpy
+pandas
+prefect>=2.0b
+git+https://git.ufz.de/rdm-software/saqc.git
+-e git+https://git@github.com/cwerner/stantic.git#egg=stantic
+
