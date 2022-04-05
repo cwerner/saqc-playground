@@ -6,10 +6,12 @@ This repo demonstrates an integration of our proposed data flow system (Prefect 
 
 
 :::{note}
-For an quick introduction to `stantic` check out the [](getting-started.md) section.
+For an quick overview check out the [](getting-started.md) section.
 :::
 
 :::{toctree}
+:maxdepth: 2
+
 getting-started.md
-faq.md
+flows.md
 :::
