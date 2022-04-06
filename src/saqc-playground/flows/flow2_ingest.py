@@ -16,7 +16,6 @@ from src.tasks import load_data
 load_dotenv()
 
 
-
 @task(description="return stantic server instance to specified FROST server")
 def intialize_server(url: str):
     """initialize a Server instance to connect to a FROST server"""
@@ -29,8 +28,6 @@ def intialize_server(url: str):
 def check_file_exists(location: Path | str):
     """Check if file exists"""
     return Path(location).is_file()
-
-
 
 
 @task(description="push latest data batch to FROST server")
@@ -60,15 +57,10 @@ def flow2_ingest(df: pd.DataFrame):
 
 
 
-def main():
-
+if __name__ == "__main__":
     df = pd.DataFrame(
         data={'airtemp_avg': [2, 2, 3, 4, 3], 'ramount': [0, 0, 0, 0.1, 1.2]}, 
         index=pd.date_range(start='1/1/2018', end='1/5/2018')
         )
 
     flow2_ingest(df)
-
-
-if __name__ == "__main__":
-    main()

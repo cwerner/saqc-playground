@@ -35,8 +35,6 @@ def flow1_lvl1_check(
     return df
 
 
-def main():
-    flow1_lvl1_check()
 
 if __name__ == "__main__":
-    main()
+    flow1_lvl1_check()

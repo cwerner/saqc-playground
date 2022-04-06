@@ -90,10 +90,8 @@ def flow3_lvl1_check(url: str):
     reporting(payload)
 
 
-def main():
-    url = os.getenv("FROST_URL")
-    flow3_lvl1_check(url)
 
 
 if __name__ == "__main__":
-    main()
+    url = os.getenv("FROST_URL")
+    flow3_lvl1_check(url)
