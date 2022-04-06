@@ -2,6 +2,14 @@
 
 In this section the core Prefect data flows are listed (see [flowchart](fig-data-flow-scheme)).
 
+:::{figure-md} fig-prefect-ui
+:class: myclass
+
+<img src="images/prefect_ui_screenshot.png" alt="prefect ui" width="400px">
+
+Prefect UI - Tasks and Flows can be scheduled or triggered.
+:::
+
 
 (flows-flow1)=
 ## 1. Check - Level 0
@@ -47,7 +55,7 @@ end-before: "if __name__"
 ## 3. Check - Level 1
 
 :::{admonition} Summary
-More indepth check if new data uwing the `SaQC` library. In this check, preceeding data is also considered (i.e. to detect unplausible trend shifts).
+More indepth check if new data uwing the `SaQC` library. In this check, previous data is also considered (i.e. to detect unplausible trend shifts).
 :::
 
 :::{admonition} Operation
@@ -55,7 +63,7 @@ More indepth check if new data uwing the `SaQC` library. In this check, preceedi
 scheduled: daily, 9:00h
 :::
 
-:::{literalinclude} ../../src/dataflow/flows/flow3_lvl1_check.py
+:::{literalinclude} ../../src/dataflow/flows/flow3_lvl1-check.py
 ---
 language: python
 start-after: "# flow"

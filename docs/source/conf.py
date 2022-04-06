@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../../src/"))
 
 # -- Project information -----------------------------------------------------
 
-project = "SaQC playground"
+project = "IFU DataFlow"
 copyright = "2022, Christian Werner"
 author = "Christian Werner"
 
