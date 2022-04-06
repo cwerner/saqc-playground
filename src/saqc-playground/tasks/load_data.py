@@ -1,12 +1,13 @@
-from prefect import task, flow, get_run_logger
-from pathlib import Path
 import datetime
 import tempfile
-from string import Template
-import pandas as pd
-from typing import Optional
 
+from pathlib import Path
+from string import Template
+
+import pandas as pd
 from sshfs import SSHFileSystem
+
+from typing import Optional
 
 def check_file_exists(location: Path | str):
     """Check if file exists"""
@@ -38,6 +39,7 @@ def load_data(
     # read header info
     with fs.open(Path(location) / "Fen_M_header.csv", "r") as fheader:
         colnames = fheader.readline()[:-1].split(",")
+        colnames = colnames.lower().replace(" ", "_").replace("(", "").replace(")","")
 
     # read raw data
     with tempfile.TemporaryDirectory() as tmp:
@@ -45,26 +47,7 @@ def load_data(
         tmp_file = Path(tmp) /  name
         fs.get_file(source_file, Path(tmp) /  name)
 
-        df = pd.read_csv(tmp_file, names=colnames, header=None, na_values="NAN", parse_dates=['TIMESTAMP'])
+        df = pd.read_csv(tmp_file, names=colnames, header=None, na_values="NAN", parse_dates=['timestamp'])
+        df = df.set_index("timestamp")
     
     return df
-
-
-# flow
-@flow(name="flow1-lvl0-check")
-def flow1(
-    src_path: str="/netapp/rawdata/fendt/micromet/raw/slow_response", 
-    year: Optional[int]=None,
-    doy: Optional[int]=None,
-    ):
-    logger = get_run_logger()
-
-    df = load_data(src_path, year=year, doy=doy)
-    logger.info(df.result().head())
-    return
-
-def main():
-    flow1()
-
-if __name__ == "__main__":
-    main()
