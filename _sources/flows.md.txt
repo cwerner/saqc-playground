@@ -7,7 +7,7 @@ In this section the core Prefect data flows are listed (see [flowchart](fig-data
 ## 1. Check - Level 0
 
 :::{admonition} Summary
-Initial loading and validation of new data detected in the IMK-IFU `rawdata` folder.
+Initial loading and validation of new data batch detected in the IMK-IFU `rawdata` folder.
 :::
 
 :::{admonition} Operation
@@ -15,11 +15,11 @@ Initial loading and validation of new data detected in the IMK-IFU `rawdata` fol
 scheduled: daily, 8:00h
 :::
 
-:::{literalinclude} ../../flows/flow1_lvl0-check.py
+:::{literalinclude} ../../src/dataflow/flows/flow1_lvl0-check.py
 ---
 language: python
-start-after: "# flow\n"
-end-before: "def main"
+start-after: "# flow"
+end-before: "if __name__"
 ---
 :::
 
@@ -36,15 +36,42 @@ library.
 triggered: success of flow [](flows-flow1)
 :::
 
-:::{literalinclude} ../../flows/flow2_ingest.py
+:::{literalinclude} ../../src/dataflow/flows/flow2_ingest.py
 ---
 language: python
-start-after: "# flow\n"
-end-before: "def main"
+start-after: "# flow"
+end-before: "if __name__"
 ---
 :::
 
 ## 3. Check - Level 1
 
+:::{admonition} Summary
+More indepth check if new data uwing the `SaQC` library. In this check, preceeding data is also considered (i.e. to detect unplausible trend shifts).
+:::
+
+:::{admonition} Operation
+:class: seealso
+scheduled: daily, 9:00h
+:::
+
+:::{literalinclude} ../../src/dataflow/flows/flow3_lvl1_check.py
+---
+language: python
+start-after: "# flow"
+end-before: "if __name__"
+---
+:::
+
 ## 4. Archive
 
+:::{admonition} Summary
+Creation of data archives, catalog entries and summary products.
+:::
+
+:::{admonition} Operation
+:class: seealso
+scheduled: daily, weekly or monthly
+:::
+
+TBD

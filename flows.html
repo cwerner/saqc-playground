@@ -196,14 +196,14 @@
 <span id="flows-flow1"></span><h2>1. Check - Level 0<a class="headerlink" href="#check-level-0" title="Permalink to this headline">#</a></h2>
 <div class="admonition-summary admonition">
 <p class="admonition-title">Summary</p>
-<p>Initial loading and validation of new data detected in the IMK-IFU <code class="docutils literal notranslate"><span class="pre">rawdata</span></code> folder.</p>
+<p>Initial loading and validation of new data batch detected in the IMK-IFU <code class="docutils literal notranslate"><span class="pre">rawdata</span></code> folder.</p>
 </div>
 <div class="seealso admonition">
 <p class="admonition-title">Operation</p>
 <p>scheduled: daily, 8:00h</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@flow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"flow1-lvl0-check"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">flow1</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">flow1_lvl1_check</span><span class="p">(</span>
     <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"/netapp/rawdata/fendt/micromet/raw/slow_response"</span><span class="p">,</span> 
     <span class="n">year</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -211,8 +211,16 @@
     <span class="n">logger</span> <span class="o">=</span> <span class="n">get_run_logger</span><span class="p">()</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">result</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-    <span class="k">return</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">validate_lvl0_data</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># trigger subflow</span>
+    <span class="k">if</span> <span class="n">status</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">flow2_ingest</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">result</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">'split'</span><span class="p">))</span>
+
+
+    <span class="k">return</span> <span class="n">df</span>
+
+
 
 </pre></div>
 </div>
@@ -228,18 +236,46 @@ library.</p>
 <p class="admonition-title">Operation</p>
 <p>triggered: success of flow <a class="reference internal" href="#flows-flow1"><span class="std std-ref">1. Check - Level 0</span></a></p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@flow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"flow2_ingest"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">flow1</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">src_path</span><span class="o">=</span><span class="s2">"/pd/raw_data"</span><span class="p">):</span>
-    <span class="k">pass</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@flow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"flow2-ingest"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"subflow that is triggered by lvl0 check"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">flow2_ingest</span><span class="p">(</span><span class="n">df_json</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"FROST_URL"</span><span class="p">)</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">intialize_server</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="c1"># we need to pass a serializable object (no plain pd.dataframe)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">df_json</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">'split'</span><span class="p">)</span>
+    
+    <span class="c1"># get data - we need a better mapping service (json on s3)?</span>
+    <span class="c1"># 140: temp, 144: precip</span>
+    <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">colname</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="mi">140</span><span class="p">,</span> <span class="mi">144</span><span class="p">],</span> <span class="p">[</span><span class="s2">"airtemp_avg"</span><span class="p">,</span> <span class="s2">"ramount"</span><span class="p">]):</span>
+        <span class="n">push_data</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="n">colname</span><span class="p">]],</span> <span class="n">datastream_id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+
+
 
 </pre></div>
 </div>
 </div>
 <div class="section" id="check-level-1">
 <h2>3. Check - Level 1<a class="headerlink" href="#check-level-1" title="Permalink to this headline">#</a></h2>
+<div class="admonition-summary admonition">
+<p class="admonition-title">Summary</p>
+<p>More indepth check if new data uwing the <code class="docutils literal notranslate"><span class="pre">SaQC</span></code> library. In this check, preceeding data is also considered (i.e. to detect unplausible trend shifts).</p>
+</div>
+<div class="seealso admonition">
+<p class="admonition-title">Operation</p>
+<p>scheduled: daily, 9:00h</p>
+</div>
 </div>
 <div class="section" id="archive">
 <h2>4. Archive<a class="headerlink" href="#archive" title="Permalink to this headline">#</a></h2>
+<div class="admonition-summary admonition">
+<p class="admonition-title">Summary</p>
+<p>Creation of data archives, catalog entries and summary products.</p>
+</div>
+<div class="seealso admonition">
+<p class="admonition-title">Operation</p>
+<p>scheduled: daily, weekly or monthly</p>
+</div>
+<p>TBD</p>
 </div>
 </div>
 
