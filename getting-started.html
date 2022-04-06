@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="🚰 Data Flows" href="flows.html" /><link rel="prev" title="Example Data Flow Integration" href="index.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.03.04"/>
-        <title>🚀 Getting started - SaQC playground 0.1 documentation</title>
+        <title>🚀 Getting started - IFU DataFlow 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=935aa2abcc5c1da4283d1dc201fb1f0add16d23a" />
     <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">SaQC playground 0.1 documentation</div></a>
+      <a href="index.html"><div class="brand">IFU DataFlow 0.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">SaQC playground 0.1 documentation</span>
+  <span class="sidebar-brand-text">IFU DataFlow 0.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -251,15 +251,15 @@
 </div>
 <div class="section" id="first-quality-control">
 <h2>First Quality Control<a class="headerlink" href="#first-quality-control" title="Permalink to this headline">#</a></h2>
-<p>Right after data is transfered to the institute, a basic data quality check is performed. Here, simple things as size of new data package, number of columns, nodata occurance etc. are validated. All these checks work on daily data packages so trends or trend deviations can not be detected. Missing data or any failed data expectations immediately trigger a warning email since they indicate measurement or transfer failures.</p>
+<p>Right after data is transfered to the institute, a basic data quality check is performed. Here, simple things as size of new data package, number of columns and rows, nodata occurance etc. are validated. All these checks work on daily data packages so trends or trend deviations can not be detected. Missing data or any failed data expectations immediately trigger a warning email since they indicate measurement or transfer failures. A continuation of the data flow is dependent on the outcome of the test (currently any issue is a hard no - so the execution of the pipeline will stop).</p>
 </div>
 <div class="section" id="ingestion-into-sta-frost-server">
 <h2>Ingestion into STA Frost Server<a class="headerlink" href="#ingestion-into-sta-frost-server" title="Permalink to this headline">#</a></h2>
-<p>Once data passed the initial stage, a subset of datastreams is parsed and loaded into the <a class="reference external" href="http://172.27.80.119:8093/FROST-Server/v1.1">FROST server</a> using a Prefect Flow and the <a class="reference external" href="https://github.com/cwerner/stantic">stantic python library</a>. Grafana dashboards allow a quick inspection into raw data.</p>
+<p>Once data passed the initial stage, a subset of datastreams is parsed and loaded into the <a class="reference external" href="http://172.27.80.119:8093/FROST-Server/v1.1">FROST server</a> using a second Prefect Flow and the <a class="reference external" href="https://github.com/cwerner/stantic">stantic python library</a>. This flow is not schedule but rather triggered by the data level0 check flow. Grafana dashboards allow a quick inspection into raw data once the data is pushed into the server.</p>
 </div>
 <div class="section" id="second-quality-control">
 <h2>Second Quality Control<a class="headerlink" href="#second-quality-control" title="Permalink to this headline">#</a></h2>
-<p>In this stage data is checked in a more thorough way. In addition to simple range checks, checks for trend breaks or other unexpected occurences are performed. These checks require multiple batches of data and thus cannot run at the ingest stage. This quality control stage will either run daily or weekly. <a class="reference external" href="https://git.ufz.de/rdm-software/saqc">SaQC</a> will be used to analyse a running window of data (i.e. previous 30 or 60 days) and aid in preparing a report for the relevant PI. After approval by the PI, the data will be marked as ready for archival.</p>
+<p>In this stage data is checked in a more thorough way. In addition to simple range checks, checks for trend breaks or other unexpected occurences are performed. These checks require multiple batches of data and thus cannot easily run at the ingest stage. This quality control stage will also run daily. <a class="reference external" href="https://git.ufz.de/rdm-software/saqc">SaQC</a> will be used to analyse a running window of data (i.e. previous 7 or 30 days) and aid in preparing a report for the relevant PI. After approval by the PI, the data will be marked as ready for archival.</p>
 </div>
 <div class="section" id="data-archive">
 <h2>Data archive<a class="headerlink" href="#data-archive" title="Permalink to this headline">#</a></h2>
