@@ -7,7 +7,12 @@ from string import Template
 import pandas as pd
 from sshfs import SSHFileSystem
 
+from prefect import task
+
+
+
 from typing import Optional
+
 
 def check_file_exists(location: Path | str):
     """Check if file exists"""
@@ -39,7 +44,7 @@ def load_data(
     # read header info
     with fs.open(Path(location) / "Fen_M_header.csv", "r") as fheader:
         colnames = fheader.readline()[:-1].split(",")
-        colnames = colnames.lower().replace(" ", "_").replace("(", "").replace(")","")
+        colnames = [cname.lower().replace(" ", "_").replace("(", "").replace(")","") for cname in colnames]
 
     # read raw data
     with tempfile.TemporaryDirectory() as tmp:

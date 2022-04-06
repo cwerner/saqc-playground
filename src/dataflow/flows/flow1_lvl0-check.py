@@ -2,9 +2,8 @@ from prefect import task, flow, get_run_logger
 import pandas as pd
 from typing import Optional
 
-from ..src.tasks import load_data
-
-from flows import flow2_ingest
+from dataflow.tasks.load_data import load_data
+from dataflow.flows.flow2_ingest import flow2_ingest
 
 @task(description="Validate new data with GreatExpectations lvl0 expectations.", tags=["ge"])
 def validate_lvl0_data(df: pd.DataFrame):
@@ -29,7 +28,7 @@ def flow1_lvl1_check(
 
     # trigger subflow
     if status.result() == True:
-        flow2_ingest(df)
+        flow2_ingest(df.result().to_json(orient='split'))
 
 
     return df

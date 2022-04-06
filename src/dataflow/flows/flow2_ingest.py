@@ -8,10 +8,10 @@ from stantic.server import Server
 from stantic.models import Datastream, Thing
 
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
-from src.tasks import load_data
 
 load_dotenv()
 
@@ -43,13 +43,14 @@ def push_data(server: Server, df: pd.DataFrame, datastream_id:int):
 
 
 # flow
-@flow(name="flow2_ingest")
-def flow2_ingest(df: pd.DataFrame):
+@flow(name="flow2_ingest", description="subflow that is triggered by lvl0 check")
+def flow2_ingest(df_json: str):
     url = os.getenv("FROST_URL")
     server = intialize_server(url)
 
-    #df = load_data("/netapp/rawdata/fendt/micromet/raw/slow_response", year=year, doy=doy)
-
+    # we need to pass a serializable object (no plain pd.dataframe)
+    df = pd.read_json(df_json, orient='split')
+    
     # get data - we need a better mapping service (json on s3)?
     # 140: temp, 144: precip
     for id, colname in zip([140, 144], ["airtemp_avg", "ramount"]):
@@ -58,9 +59,11 @@ def flow2_ingest(df: pd.DataFrame):
 
 
 if __name__ == "__main__":
+    # test
     df = pd.DataFrame(
         data={'airtemp_avg': [2, 2, 3, 4, 3], 'ramount': [0, 0, 0, 0.1, 1.2]}, 
         index=pd.date_range(start='1/1/2018', end='1/5/2018')
         )
 
-    flow2_ingest(df)
+    # we need to oass a json around
+    flow2_ingest(df.to_json(orient='split'))
