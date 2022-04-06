@@ -70,7 +70,7 @@ def reporting(payload: Any):
 
 
 # flow
-@flow(name="flow3_lvl1_check")
+@flow(name="flow3-lvl1-check")
 def flow3_lvl1_check(url: str):
 
     server = intialize_server(url)

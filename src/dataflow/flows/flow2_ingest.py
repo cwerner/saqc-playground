@@ -43,7 +43,7 @@ def push_data(server: Server, df: pd.DataFrame, datastream_id:int):
 
 
 # flow
-@flow(name="flow2_ingest", description="subflow that is triggered by lvl0 check")
+@flow(name="flow2-ingest", description="subflow that is triggered by lvl0 check")
 def flow2_ingest(df_json: str):
     url = os.getenv("FROST_URL")
     server = intialize_server(url)
